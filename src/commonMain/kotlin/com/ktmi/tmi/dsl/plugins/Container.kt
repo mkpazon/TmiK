@@ -1,7 +1,8 @@
 package com.ktmi.tmi.dsl.plugins
 
 import com.ktmi.irc.IrcState
-import com.ktmi.tmi.dsl.builder.IrcStateProvider
+import com.ktmi.tmi.client.TmiClient
+import com.ktmi.tmi.dsl.builder.TmiStateProvider
 import com.ktmi.tmi.dsl.builder.TwitchDsl
 import com.ktmi.tmi.dsl.builder.TwitchScope
 import com.ktmi.tmi.messages.TwitchMessage
@@ -20,70 +21,79 @@ import kotlin.coroutines.CoroutineContext
  * @param context [CoroutineContext] used for creating [TwitchMessage] listeners
  * @throws NoIrcStateHandlerException when ircStateFlow is not supplied and no parent is IrcStateProvider
  */
-class TwitchContainer(
-    parent: TwitchScope,
+open class Container(
+    parent: TwitchScope?,
     context: CoroutineContext,
-    ircStateFlow: Flow<IrcState>? = null
+    client: TmiStateProvider? = null
 ) : TwitchScope(parent, context + CoroutineName("Container")),
-    IrcStateProvider {
+    TmiStateProvider {
 
-    private val ircState: Flow<IrcState>
-    private val plugins = mutableListOf<TwitchPlugin>()
+    private val provider: TmiStateProvider
+    private val plugins = mutableMapOf<String, TwitchPlugin>()
 
     init {
-        ircState = ircStateFlow ?: run {
+        provider = client ?: run<TmiStateProvider> {
             var currentScope: TwitchScope? = this.parent
 
             // Find parent who implements IrcStateProvider
-            while (currentScope != null && currentScope !is IrcStateProvider) {
+            while (currentScope != null && currentScope !is TmiStateProvider) {
                 currentScope = currentScope.parent
             }
 
-            if (currentScope == null || currentScope !is IrcStateProvider)
+            if (currentScope == null || currentScope !is TmiStateProvider)
                 throw NoIrcStateHandlerException()
 
-            currentScope.getIrcStateFlow()
+            currentScope
         }
 
-        launch { ircState.collect {
-            for (plugin in plugins)
+        launch { provider.connectionStatus.collect {
+            for (plugin in plugins.values)
                 plugin.onConnectionStateChange(it)
         } }
     }
 
-    override fun getIrcStateFlow(): Flow<IrcState> = ircState
+    override val username: String get() = provider.username
+    override fun connect() = provider.connect()
+    override fun disconnect() = provider.disconnect()
+
+    override val connectionStatus: Flow<IrcState> = provider.connectionStatus
 
     override suspend fun getTwitchFlow(): Flow<TwitchMessage> = super.getTwitchFlow()
         .filter { message ->
-            plugins.all { it.filterIncoming(message) }
+            plugins.values.all { it.filterIncoming(message) }
         }.map {
             var message = it
 
-            for (plugin in plugins)
+            for (plugin in plugins.values)
                 message = plugin.mapIncoming(message)
 
             message
         }
 
     override suspend fun sendRaw(message: String) {
-        if (!plugins.all { it.filterOutgoing(message) })
+        if (!plugins.values.all { it.filterOutgoing(message) })
             return
 
         var finalMessage = message
-        for (plugin in plugins)
+        for (plugin in plugins.values)
             finalMessage = plugin.mapOutgoing(finalMessage)
 
         super.sendRaw(finalMessage)
     }
 
     operator fun TwitchPlugin.unaryPlus() {
-        plugins.add(this)
+        val name = this.name
+        if (plugins.containsKey(name))
+            throw PluginAlreadyExistsException(name)
+
+        plugins[name] = this
     }
 }
 
 @TwitchDsl
-inline fun TwitchScope.container(block: TwitchContainer.() -> Unit) =
-    TwitchContainer(this, coroutineContext).apply(block)
+inline fun TwitchScope.container(block: Container.() -> Unit) =
+    Container(this, coroutineContext).apply(block)
 
 /** Thrown when no parent is IrcStateProvider */
 class NoIrcStateHandlerException : Exception("No parent of TwitchContainer provides IrcState (implements IrcStateProvider)")
+class PluginAlreadyExistsException(name: String) : Exception("Plugin with name $name already exists in this container")
