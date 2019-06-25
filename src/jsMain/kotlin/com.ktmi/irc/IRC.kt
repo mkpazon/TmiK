@@ -1,12 +1,13 @@
 package com.ktmi.irc
 
+import com.ktmi.irc.IrcState.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.launch
 import org.w3c.dom.MessageEvent
-import org.w3c.dom.WebSocket
 import kotlin.coroutines.CoroutineContext
+
 
 actual class IRC actual constructor(
     private val token: String,
@@ -22,7 +23,7 @@ actual class IRC actual constructor(
     private val stateChannel: Channel<IrcState> = Channel(Channel.UNLIMITED)
     override val states: ReceiveChannel<IrcState> get() = stateChannel
 
-    private var state: IrcState = IrcState.DISCONNECTED
+    private var state: IrcState = DISCONNECTED
     override val currentState: IrcState
         get() = state
 
@@ -35,11 +36,12 @@ actual class IRC actual constructor(
 
         ws!!.apply {
             onopen = {
-                setState(IrcState.CONNECTING)
+                setState(CONNECTING)
                 authorize(token, username)
             }
-            onclose = { setState(IrcState.DISCONNECTED) }
+            onclose = { setState(DISCONNECTED) }
             onmessage = ::onMessage
+            onerror = { setState(DISCONNECTED) }
         }
     }
 
@@ -56,11 +58,13 @@ actual class IRC actual constructor(
     private fun onMessage(ev: MessageEvent) {
         val text = ev.data as String
 
-        when {
-            text.startsWith("PING") -> sendMessage("PONG :tmi.twitch.tv")
-            text.startsWith(":tmi.twitch.tv 001") -> setState(IrcState.CONNECTED)
+        if (text.startsWith("PING"))
+            sendMessage("PONG :tmi.twitch.tv")
+        else {
+            if (text.startsWith(":tmi.twitch.tv 001"))
+                setState(CONNECTED)
 
-            else -> launch {
+            launch {
                 for (line in text.trim().lines())
                     if (!ignored(line))
                         messageChannel.send(parseMessage(line))
