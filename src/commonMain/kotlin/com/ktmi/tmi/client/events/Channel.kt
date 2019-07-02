@@ -69,11 +69,11 @@ inline fun <reified T : TwitchMessage> TwitchScope.onTwitchMessage(
 }
 
 /** Registers a listener for [GlobalUserStateMessage] */
-inline fun MainScope.onGlobalUserState(crossinline action: suspend (GlobalUserStateMessage) -> Unit) =
+inline fun GlobalContextScope.onGlobalUserState(crossinline action: suspend (GlobalUserStateMessage) -> Unit) =
     onTwitchMessage(action)
 
 /** Registers a listener for [JoinMessage] */
-inline fun MainScope.onUserJoin(crossinline action: suspend (JoinMessage) -> Unit) =
+inline fun GlobalContextScope.onUserJoin(crossinline action: suspend (JoinMessage) -> Unit) =
     onTwitchMessage(action)
 /** Registers a listener for [JoinMessage] */
 inline fun ChannelContextScope.onUserJoin(crossinline action: suspend (JoinMessage) -> Unit) =
@@ -83,7 +83,7 @@ inline fun UserContextScope.onUserJoin(crossinline action: suspend (JoinMessage)
     onTwitchMessage(action)
 
 /** Registers a listener for [LeaveMessage] */
-inline fun MainScope.onUserLeave(crossinline action: suspend (LeaveMessage) -> Unit) =
+inline fun GlobalContextScope.onUserLeave(crossinline action: suspend (LeaveMessage) -> Unit) =
     onTwitchMessage(action)
 /** Registers a listener for [LeaveMessage] */
 inline fun ChannelContextScope.onUserLeave(crossinline action: suspend (LeaveMessage) -> Unit) =
@@ -93,7 +93,7 @@ inline fun UserContextScope.onUserLeave(crossinline action: suspend (LeaveMessag
     onTwitchMessage(action)
 
 /** Registers a listener for [UserStateMessage] */
-inline fun MainScope.onUserState(crossinline action: suspend (UserStateMessage) -> Unit) =
+inline fun GlobalContextScope.onUserState(crossinline action: suspend (UserStateMessage) -> Unit) =
     onTwitchMessage(action)
 /** Registers a listener for [UserStateMessage] */
 inline fun ChannelContextScope.onUserState(crossinline action: suspend (UserStateMessage) -> Unit) =
@@ -106,14 +106,14 @@ inline fun UserStateContextScope.onUserState(crossinline action: suspend (UserSt
     onTwitchMessage(action)
 
 /** Registers a listener for [RoomStateMessage] */
-inline fun MainScope.onRoomState(crossinline action: suspend (RoomStateMessage) -> Unit) =
+inline fun GlobalContextScope.onRoomState(crossinline action: suspend (RoomStateMessage) -> Unit) =
     onTwitchMessage(action)
 /** Registers a listener for [RoomStateMessage] */
 inline fun ChannelContextScope.onRoomState(crossinline action: suspend (RoomStateMessage) -> Unit) =
     onTwitchMessage(action)
 
 /** Registers a listener for [TextMessage] */
-inline fun MainScope.onMessage(crossinline action: suspend (TextMessage) -> Unit) =
+inline fun GlobalContextScope.onMessage(crossinline action: suspend (TextMessage) -> Unit) =
     onTwitchMessage(action)
 /** Registers a listener for [TextMessage] */
 inline fun ChannelContextScope.onMessage(crossinline action: suspend (TextMessage) -> Unit) =
@@ -126,7 +126,7 @@ inline fun UserStateContextScope.onMessage(crossinline action: suspend (TextMess
     onTwitchMessage(action)
 
 /** Registers a listener for [ClearChatMessage] */
-inline fun MainScope.onClearChat(crossinline action: suspend (ClearChatMessage) -> Unit) =
+inline fun GlobalContextScope.onClearChat(crossinline action: suspend (ClearChatMessage) -> Unit) =
     onTwitchMessage(action)
 /** Registers a listener for [ClearChatMessage] */
 inline fun ChannelContextScope.onClearChat(crossinline action: suspend (ClearChatMessage) -> Unit) =
@@ -136,7 +136,7 @@ inline fun UserContextScope.onClearChat(crossinline action: suspend (ClearChatMe
     onTwitchMessage(action)
 
 /** Registers a listener for [ClearMessage] */
-inline fun MainScope.onClearMessage(crossinline action: suspend (ClearMessage) -> Unit) =
+inline fun GlobalContextScope.onClearMessage(crossinline action: suspend (ClearMessage) -> Unit) =
     onTwitchMessage(action)
 /** Registers a listener for [ClearMessage] */
 inline fun ChannelContextScope.onClearMessage(crossinline action: suspend (ClearMessage) -> Unit) =
@@ -146,14 +146,14 @@ inline fun UserContextScope.onClearMessage(crossinline action: suspend (ClearMes
     onTwitchMessage(action)
 
 /** Registers a listener for [NoticeMessage] */
-inline fun MainScope.onNotice(crossinline action: suspend (NoticeMessage) -> Unit) =
+inline fun GlobalContextScope.onNotice(crossinline action: suspend (NoticeMessage) -> Unit) =
     onTwitchMessage(action)
 /** Registers a listener for [NoticeMessage] */
 inline fun ChannelContextScope.onNotice(crossinline action: suspend (NoticeMessage) -> Unit) =
     onTwitchMessage(action)
 
 /** Registers a listener for [UserNoticeMessage] */
-inline fun MainScope.onUserNotice(crossinline action: suspend (UserNoticeMessage) -> Unit) =
+inline fun GlobalContextScope.onUserNotice(crossinline action: suspend (UserNoticeMessage) -> Unit) =
     onTwitchMessage(action)
 /** Registers a listener for [UserNoticeMessage] */
 inline fun ChannelContextScope.onUserNotice(crossinline action: suspend (UserNoticeMessage) -> Unit) =
@@ -163,4 +163,8 @@ inline fun UserContextScope.onUserNotice(crossinline action: suspend (UserNotice
     onTwitchMessage(action)
 /** Registers a listener for [UserNoticeMessage] */
 inline fun UserStateContextScope.onUserNotice(crossinline action: suspend (UserNoticeMessage) -> Unit) =
+    onTwitchMessage(action)
+
+/** Registers a listener for [UserNoticeMessage] */
+inline fun GlobalContextScope.onWhisper(crossinline action: suspend (WhisperMessage) -> Unit) =
     onTwitchMessage(action)

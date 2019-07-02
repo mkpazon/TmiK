@@ -54,6 +54,14 @@ abstract class TwitchScope(
 }
 
 /**
+ * Scope where all events are available
+ */
+abstract class GlobalContextScope(
+    parent: TwitchScope?,
+    context: CoroutineContext
+) : TwitchScope(parent, context)
+
+/**
  * Scope where all events are in relation to some **channel**
  * Events available: [JoinMessage], [LeaveMessage], [UserStateMessage], [RoomStateMessage],
  * [TextMessage], [ClearChatMessage], [ClearMessage], [NoticeMessage] and [UserNoticeMessage]

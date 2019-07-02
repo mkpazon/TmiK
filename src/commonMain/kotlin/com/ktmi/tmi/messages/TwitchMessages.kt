@@ -248,6 +248,29 @@ class UserNoticeMessage(
 }
 
 /**
+ * Identifies whisper sent by some user
+ * @throws CorruptedMessageException when some property is not present
+ * @throws WrongMessageTypeException thrown if command in [RawMessage] does not match given command
+ */
+class WhisperMessage(
+    rawMessage: RawMessage
+) : TwitchMessage(rawMessage, "WHISPER") {
+    val badges get() = _badges
+    val color get() = _color
+    val displayName get() = _displayName
+    val emotes get() = _emotes
+    val messageId get() = rawMessage.tags["message-id"]
+        ?: throw CorruptedMessageException(rawMessage, "messageId not available")
+    val threadId get() = rawMessage.tags["thread-id"]?.toLongOrNull()
+        ?: throw CorruptedMessageException(rawMessage, "threadId not available")
+    val userId get() = _userId
+        ?: throw CorruptedMessageException(rawMessage, "UserId not available")
+    val message get() = _text
+        ?: throw CorruptedMessageException(rawMessage, "message not available")
+    val username get() = _username
+}
+
+/**
  * Message that wasn't identified
  */
 class UndefinedMessage(rawMessage: RawMessage) : TwitchMessage(rawMessage, rawMessage.commandName)
