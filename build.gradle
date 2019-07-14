@@ -73,23 +73,19 @@ bintray {
     key = project.hasProperty('btKey') ? btKey : "N/A"
 
     pkg {
-        repo = 'maven'
-        name = 'TmiK'
+        repo = 'TmiK'
+        name = 'core'
         licenses = ['MIT']
         vcsUrl = 'https://github.com/wooodenleg/TmiK.git'
         issueTrackerUrl = 'https://github.com/wooodenleg/TmiK/issues'
+        override = true
+
+        publications = ["js", "jvm", "kotlinMultiplatform", "metadata"]
 
         version {
             name = project.version
             released = new Date()
             vcsTag = project.version
         }
-    }
-}
-
-bintrayUpload.doFirst {
-    publications = project.publishing.publications.findAll { !it.name.contains('-test') }.collect {
-        println("Uploading artifact '$it.groupId:$it.artifactId:$it.version' from publication '$it.name'")
-        it.name
     }
 }

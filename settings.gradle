@@ -7,7 +7,7 @@ pluginManagement {
         }
     }
 }
-rootProject.name = 'TmiK'
+rootProject.name = 'core'
 
 
 enableFeaturePreview('GRADLE_METADATA')
